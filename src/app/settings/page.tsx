@@ -1,3 +1,4 @@
+
 'use client';
 
 import type React from 'react';
@@ -11,7 +12,7 @@ import { Switch } from '@/components/ui/switch';
 import PageHeader from '@/components/shared/page-header';
 import type { AiModel } from '@/types';
 import { AVAILABLE_AI_MODELS } from '@/types';
-import { Save, Bot, Zap, ChevronDown } from 'lucide-react';
+import { Save, Bot, Zap } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
@@ -74,6 +75,8 @@ export default function SettingsPage() {
     }, 1500);
   };
 
+  const selectedDefaultModel = AVAILABLE_AI_MODELS.find(m => m.id === generalSettings.defaultAiModel);
+
   if (isLoading) {
     return (
       <div>
@@ -130,7 +133,7 @@ export default function SettingsPage() {
               </p>
             </div>
             
-            <Accordion type="single" collapsible className="w-full">
+            <Accordion type="single" collapsible className="w-full" defaultValue="api-keys">
               <AccordionItem value="api-keys">
                 <AccordionTrigger className="text-base font-medium hover:no-underline">
                   <div className="flex items-center">
@@ -138,18 +141,26 @@ export default function SettingsPage() {
                   </div>
                 </AccordionTrigger>
                 <AccordionContent className="pt-2 space-y-4">
-                  {AVAILABLE_AI_MODELS.map((model) => (
-                    <div key={model.id} className="space-y-2 p-3 border rounded-md bg-secondary/30">
-                      <Label htmlFor={`apiKey-${model.id}`}>{model.name} API Key</Label>
+                  {selectedDefaultModel && (
+                    <div key={selectedDefaultModel.id} className="space-y-2 p-3 border rounded-md bg-secondary/30">
+                      <Label htmlFor={`apiKey-${selectedDefaultModel.id}`}>{selectedDefaultModel.name} API Key</Label>
                       <Input 
-                        id={`apiKey-${model.id}`} 
+                        id={`apiKey-${selectedDefaultModel.id}`} 
                         type="password"
-                        value={apiKeys.find(ak => ak.modelId === model.id)?.apiKey || ''}
-                        onChange={(e) => handleApiKeyChange(model.id, e.target.value)}
-                        placeholder={`Enter API Key for ${model.provider}`}
+                        value={apiKeys.find(ak => ak.modelId === selectedDefaultModel.id)?.apiKey || ''}
+                        onChange={(e) => handleApiKeyChange(selectedDefaultModel.id, e.target.value)}
+                        placeholder={`Enter API Key for ${selectedDefaultModel.provider}`}
                       />
+                       <p className="text-xs text-muted-foreground">
+                        API key for the selected default AI model: {selectedDefaultModel.name}.
+                      </p>
                     </div>
-                  ))}
+                  )}
+                  {!selectedDefaultModel && (
+                    <p className="text-sm text-muted-foreground p-3 border rounded-md bg-secondary/30">
+                      Select a default AI model above to configure its API key.
+                    </p>
+                  )}
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
@@ -201,3 +212,4 @@ export default function SettingsPage() {
     </div>
   );
 }
+
